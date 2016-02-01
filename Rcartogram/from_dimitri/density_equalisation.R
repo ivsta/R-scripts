@@ -19,13 +19,13 @@ density_equalisation<-function(x_in,y_in,grid_size,sigma=1,sea=0){
   new<-predict.Cartogram(cart,x=dat$v1,y=dat$v2)
 
   res<-data.table(x=new[,1],y=new[,2])
-  print(ggplot(data.table(x=new[,1],y=new[,2])[sample(1:.N,5000)])+geom_point(aes(x=x,y=y),alpha=0.015))
+  # print(ggplot(data.table(x=new[,1],y=new[,2])[sample(1:.N,5000)])+geom_point(aes(x=x,y=y),alpha=0.015))
   res
 }
 
-
-r1<-density_equalisation(pca_res2$x[,"PC1"],pca_res2$x[,"PC3"],grid_size=100,sigma=0.005,sea=0.00)
-r1[is.na(x),':='(x=0,y=0)]
-
-r2<-density_equalisation(r1$x,r1$y,grid_size=100,sigma=0.005,sea=0.0)
-#r3<-density_equalisation(r2$x+runif(nrow(r2))*4,r2$y+runif(nrow(r2))*4,1)
+# 
+# r1<-density_equalisation(pca_res2$x[,"PC1"],pca_res2$x[,"PC3"],grid_size=100,sigma=0.005,sea=0.00)
+# r1[is.na(x),':='(x=0,y=0)]
+# 
+# r2<-density_equalisation(r1$x,r1$y,grid_size=100,sigma=0.005,sea=0.0)
+# #r3<-density_equalisation(r2$x+runif(nrow(r2))*4,r2$y+runif(nrow(r2))*4,1)

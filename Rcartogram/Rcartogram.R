@@ -59,11 +59,16 @@ summary(grid$y)
 
 transformed <- predict(grid, runif(1000, 1, 2), runif(1000, 1, 32))
 
-summary(transformed$x)
-summary(transformed$y)
-
-
 tf <- data.table(x = transformed$x, y = transformed$y)
 
 ggplot(data = tf, aes(x = x, y = y)) +
+  geom_point()
+
+
+# Try again using Dimitri's code
+source('/Users/wilsonpok/R_scripts/Rcartogram/from_dimitri/predict.cartogram.R')
+
+transformed <- predict.Cartogram(grid, runif(1000, 1, 2), runif(1000, 1, 32))
+
+ggplot(data = data.table(transformed), aes(x = x, y = y)) +
   geom_point()
