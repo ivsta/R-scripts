@@ -1,0 +1,9 @@
+*.shp
+*.shx
+*.dbf
+*.txt
+*.prj
+*.html
+*.cpg
+*.Rhistory
+*.xls
