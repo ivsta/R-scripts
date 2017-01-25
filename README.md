@@ -1,3 +1,3 @@
-# R_scripts
+# R-scripts
 
 Examples of R scripts found around the web.
