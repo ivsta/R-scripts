@@ -105,7 +105,8 @@ xgb.grid <- expand.grid(nrounds = 500, #the maximum number of iterations
                         max_depth = c(2,6,10),
                         colsample_bytree =0.8,
                         min_child_weight = 10,
-                        gamma = 1
+                        gamma = 1,
+                        subsample = 1
                         )
 
 xgb.tune <-train(x=trainX,y=trainData$Class,
