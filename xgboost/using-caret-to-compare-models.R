@@ -8,7 +8,7 @@
 library(caret)
 library(corrplot)			# plot correlations
 library(doParallel)		# parallel processing
-library(dplyr)        # Used by caret
+library(plyr); library(dplyr)        # Used by caret
 library(gbm)				  # GBM Models
 library(pROC)				  # plot the ROC curve
 library(xgboost)      # Extreme Gradient Boosting
