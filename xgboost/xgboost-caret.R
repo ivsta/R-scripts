@@ -2,11 +2,15 @@ library(caret)
 library(doParallel)		# parallel processing
 library(pROC)
 library(classifierplots)
+library(Ckmeans.1d.dp)
+library(dtplyr)
 
 
 ### Get the Data
 # Load the data and construct indices to divied it into training and test data sets.
-data(segmentationData)  	# Load the segmentation data set
+data(segmentationData)
+segmentationData <- tbl_dt(segmentationData)  	# Load the segmentation data set
+
 dim(segmentationData)
 head(segmentationData, 2)
 
@@ -36,16 +40,17 @@ ctrl <- trainControl(method = "repeatedcv"    # 10fold cross validation
 
 
 # Train xgboost
-xgb.grid <- expand.grid(nrounds = 500 # the maximum number of iterations
+xgb.grid <- expand.grid(nrounds = c(400, 500, 600) # the maximum number of iterations
                         , eta = c(0.01, 0.1) # shrinkage
-                        , max_depth = c(2, 6, 10)
+                        , max_depth = c(2, 5, 15)
                         , colsample_bytree = 0.8
                         , min_child_weight = 10
                         , gamma = 1
                         , subsample = 1
 )
 
-xgb.tune <-train(x=trainX,y=trainData$Class
+xgb.tune <-train(x = trainX
+                 , y = trainData$Class
                  , method = "xgbTree"
                  , metric = "ROC"
                  , trControl = ctrl
@@ -59,7 +64,7 @@ res
 
 ### xgboostModel Predictions and Performance
 # Make predictions using the test data set
-xgb.pred <- predict(xgb.tune,testX)
+xgb.pred <- predict(xgb.tune, testX)
 
 #Look at the confusion matrix  
 confusionMatrix(xgb.pred,testData$Class)   
@@ -74,12 +79,24 @@ xgb.ROC <- roc(predictor = xgb.probs$PS
 xgb.ROC$auc
 # Area under the curve: 0.8888
 
-plot(xgb.ROC,main="xgboost ROC")
+plot(xgb.ROC, main = "xgboost ROC")
 # Plot the propability of poor segmentation
-histogram(~xgb.probs$PS|testData$Class,xlab="Probability of Poor Segmentation")
+histogram(~xgb.probs$PS|testData$Class, xlab = "Probability of Poor Segmentation")
 
 setDT(testData)
 testData[Class == 'PS', label := 1]
 testData[Class == 'WS', label := 0]
 
 classifierplots(test.y = testData$label, pred.prob = xgb.probs$PS)
+
+
+var_imp <- tbl_dt(xgb.importance(feature_names = names(testX), model = xgb.tune$finalModel))
+xgb.ggplot.importance(importance_matrix = var_imp, rel_to_first = TRUE)
+xgb.plot.importance(importance_matrix = var_imp, top_n = 20, rel_to_first = TRUE)
+
+
+
+xgb_tree <- xgb.model.dt.tree(feature_names = names(testX), model = xgb.tune$finalModel, text = NULL, n_first_tree = 1)
+xgb.plot.tree(feature_names = names(testX), model = xgb.tune$finalModel, n_first_tree = 0)
+
+
