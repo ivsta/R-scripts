@@ -3,7 +3,11 @@ library(doParallel)		# parallel processing
 library(pROC)
 library(classifierplots)
 library(Ckmeans.1d.dp)
+library(tidyverse)
 library(dtplyr)
+library(tabplot)
+library(ggthemes)
+
 
 
 ### Get the Data
@@ -12,15 +16,22 @@ data(segmentationData)
 segmentationData <- tbl_dt(segmentationData)  	# Load the segmentation data set
 
 dim(segmentationData)
-head(segmentationData, 2)
+glimpse(segmentationData)
+
+
+
 
 trainIndex <- createDataPartition(segmentationData$Case, p = 0.5, list = FALSE)
-trainData <- segmentationData[trainIndex,-c(1,2)]
-testData  <- segmentationData[-trainIndex,-c(1,2)]
 
-trainX <-trainData[,-1]        # Pull out the dependent variable
-testX <- testData[,-1]
-sapply(trainX,summary) # Look at a summary of the training data
+trainData <- dplyr::slice(segmentationData, trainIndex) %>% select(-Cell, -Case)
+testData <- dplyr::slice(segmentationData, -trainIndex) %>% select(-Cell, -Case)
+
+trainX <- select(trainData, -Class)        # Pull out the dependent variable
+testX <- select(testData, -Class)
+
+glimpse(trainX)
+summary(trainX)
+tableplot(trainX)
 
 
 # Set up to do parallel processing   
@@ -46,8 +57,7 @@ xgb.grid <- expand.grid(nrounds = c(400, 500, 600) # the maximum number of itera
                         , colsample_bytree = 0.8
                         , min_child_weight = 10
                         , gamma = 1
-                        , subsample = 1
-)
+                        , subsample = 1)
 
 xgb.tune <-train(x = trainX
                  , y = trainData$Class
@@ -70,7 +80,7 @@ xgb.pred <- predict(xgb.tune, testX)
 confusionMatrix(xgb.pred,testData$Class)   
 
 #Draw the ROC curve 
-xgb.probs <- predict(xgb.tune,testX,type="prob")
+xgb.probs <- predict(xgb.tune, testX, type = "prob")
 #head(xgb.probs)
 
 xgb.ROC <- roc(predictor = xgb.probs$PS
@@ -83,9 +93,8 @@ plot(xgb.ROC, main = "xgboost ROC")
 # Plot the propability of poor segmentation
 histogram(~xgb.probs$PS|testData$Class, xlab = "Probability of Poor Segmentation")
 
-setDT(testData)
-testData[Class == 'PS', label := 1]
-testData[Class == 'WS', label := 0]
+
+testData <- testData %>% mutate(label = case_when(Class == 'PS' ~ 1, Class == 'WS' ~ 0))
 
 classifierplots(test.y = testData$label, pred.prob = xgb.probs$PS)
 
