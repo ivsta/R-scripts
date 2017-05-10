@@ -3,7 +3,7 @@ library( ReporteRs )
 setwd('/Users/wilsonpok/Desktop')
 
 # Creation of doc, a pptx object (default template)
-mydoc <- pptx( )
+mydoc <- pptx(template = 'temp.pptx')
 
 # check my layout names:
 slide.layouts(mydoc)
