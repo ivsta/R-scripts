@@ -1,6 +1,8 @@
 library(tidyverse)
 library(magrittr)
 
+iris %>% as_tibble() %>% glimpse
+
 set.seed(666)
 
 iris_train <- iris %>%
