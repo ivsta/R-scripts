@@ -2,6 +2,8 @@ library(doMC)
 library(caret)
 library(minicaret)
 library(mlbench)
+library(magrittr)
+library(tidyverse)
 
 registerDoMC(cores = detectCores())
 
@@ -34,22 +36,31 @@ training <- training %>% as_data_frame()
 training_features <- training %>% select(-Class) %>% data.frame()
 
 
-gbmFit1 <- train(x = training_features,
+(gbmFit1 <- train(x = training_features,
                  y = training$Class,
                  method = "gbm", 
                  trControl = fitControl,
                  ## This last option is actually one
                  ## for gbm() that passes through
-                 verbose = FALSE)
-gbmFit1
+                 verbose = FALSE))
 
-
-
-ncv <- nestedcv(x = training_features,
+(gbm_ncv <- nestedcv(x = training_features,
                 y = training$Class,
                 method = "gbm", 
                 trControl = fitControl,
                 ## This last option is actually one
                 ## for gbm() that passes through
-                verbose = FALSE)
-ncv
+                verbose = FALSE))
+
+
+(rfFit1 <- train(x = training_features,
+                  y = training$Class,
+                  method = "rf", 
+                  trControl = fitControl))
+
+(rf_ncv <- nestedcv(x = training_features,
+                     y = training$Class,
+                     method = "rf", 
+                     trControl = fitControl,
+                     nestedrepeats = 3,
+                     verbose = 1))
