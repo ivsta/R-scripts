@@ -75,31 +75,31 @@ dmy <- dummyVars(" ~ history_segment + mens + womens +
 dt_dmy_list <- dt_features_list %>%
   map(~ predict(dmy, newdata = .x) %>% as_data_frame())
 
-dt_features_dmy_list <- dt_features_list %>% map2(dt_dmy_list, bind_dmy_features)
+dt_features_dmy_list <- dt_features_list %>%
+  map2(dt_dmy_list, bind_dmy_features)
 
-dt_features_dmy_list[[1]]
 
-gbm_visit <- dt_features_dmy_list %>% map2(dt_visit_list, gbm_train)
 
-dt_features_dmy_list %>% map(dim)
+gbm_visit <- dt_features_dmy_list %>% map2(dt_visit_list, gbm_train_visit)
 
-dt_visit_list %>% map(length)
+gbm_visit[[1]] %>% summary()
+gbm_visit[[2]] %>% summary()
+gbm_visit[[3]] %>% summary()
 
-gbm_train <- function(features, labels){
-  train(x = features
-        , y = labels$visit
-        , method = "gbm"
-        , tuneGrid = gbmGrid
-        , trControl = trncntrl
-        , metric = "ROC")
-}
+dt_features_dmy <- dt_features_dmy_list %>% bind_rows()
 
-gbm_visit_email_mens <- train(x = email_mens_dmy_features
-                              , y = make.names(email_mens_visit$visit)
-                              , method = "gbm"
-                              , tuneGrid = gbmGrid
-                              , trControl = trncntrl
-                              , metric = "ROC")
+pred_list <- gbm_visit %>% map2(dt_features_dmy_list, get_preds)
+
+plot_roc(resp = dt_visit_list[[1]]$visit, pred = pred_list[[1]]$X1)
+plot_roc(resp = dt_visit_list[[2]]$visit, pred = pred_list[[2]]$X1)
+plot_roc(resp = dt_visit_list[[3]]$visit, pred = pred_list[[3]]$X1)
+
+
+# uplift
+
+
+
+
 
 
 #------------------------
@@ -112,3 +112,22 @@ bind_dmy_features <- function(features, dmy){
   bind_cols(dmy)
 }
 
+gbm_train_visit <- function(features, labels){
+  train(x = features
+        , y = labels$visit
+        , method = "gbm"
+        , tuneGrid = gbmGrid
+        , trControl = trncntrl
+        , metric = "ROC")
+}
+
+get_preds <- function(model, newdata){
+  model %>%
+    predict(newdata, type = "prob") %>% as_data_frame() %>%
+    dplyr::select(X1)
+}
+
+plot_roc <-function(resp, pred){
+  roc(response = resp, predictor = pred, ci = TRUE) %>%
+    plot(print.auc = TRUE)
+}
