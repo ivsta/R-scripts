@@ -286,11 +286,11 @@ pred_test_uplift %>%
 # uplift by decile
 pred_test_uplift_trtm <- pred_test_uplift %>%
   filter(target_control == "target") %>%
-  mutate(decile = ntile(pred_uplift, 10) %>% as.factor())
+  mutate(decile = 11 - ntile(pred_uplift, 10) %>% as.factor())
 
 pred_test_uplift_ctrl <- pred_test_uplift %>%
   filter(target_control == "control") %>%
-  mutate(decile = ntile(pred_uplift, 10) %>% as.factor())
+  mutate(decile = 11 - ntile(pred_uplift, 10) %>% as.factor())
 
 (test_decile_trtm <- pred_test_uplift_trtm %>%
   group_by(decile) %>%
