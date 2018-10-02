@@ -39,6 +39,11 @@ train_test2 <- train_test %>%
   )
 
 
+train_test2 %>%
+  filter(store == 1 & item == 1) %>%
+  ggplot(aes(x = date, y = quoter)) +
+  geom_point()
+
 train_test3 <- train_test2 %>%
   group_by(item, store, month) %>%
   mutate(item_store_month_sales = mean(sales, na.rm = TRUE)) %>%
