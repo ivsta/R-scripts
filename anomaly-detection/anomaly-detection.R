@@ -1,4 +1,4 @@
-devtools::install_github('twitter/AnomalyDetection')
+# devtools::install_github('twitter/AnomalyDetection')
 library(AnomalyDetection)
 library(tidyverse)
 library(magrittr)

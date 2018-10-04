@@ -3,9 +3,10 @@
 # initialize all necessary libraries
 library(cluster)
 library(psych)
+library(RCurl)
 
 # read CSV file - (kmeans_data.csv) - convert to a matrix
-data1 <- read.table(file='kmeans_data.csv', sep=',', header=T, row.names=1)
+data1 <- read.csv(text = getURL('https://raw.githubusercontent.com/mpeeples2008/Kmeans/master/kmeans_data.csv'), header = T, row.names = 1)
 data.p <- as.matrix(data1)
 
 # Ask for user input - convert raw counts to percents?
