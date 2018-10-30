@@ -1,5 +1,5 @@
 # https://www.kaggle.com/c/demand-forecasting-kernels-only/data
-# box rsync anz:lab:thog.red.625 -- -aH ~/Desktop/ :~/work/data/
+# box rsync anz:lab:beaker.cyan.117 -- -aH ~/Desktop/ :~/work/data
 
 library(tidyverse)
 library(magrittr)
