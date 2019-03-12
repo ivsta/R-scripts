@@ -1,6 +1,5 @@
 # https://facebook.github.io/prophet/docs/quick_start.html
 # https://www.kaggle.com/c/demand-forecasting-kernels-only/data
-# box rsync news:lab:gonzo.yellow.996 -- -aH ~/Desktop/ :~/work/data
 
 library(tidyverse)
 library(magrittr)
