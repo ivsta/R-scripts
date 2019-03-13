@@ -1,4 +1,5 @@
 library(tidyverse)
+library(purrr)
 library(magrittr)
 library(cluster)
 library(fpc)
@@ -43,19 +44,44 @@ dt %<>% replace_na(list(entries_0600_to_1000 = 0
 # Prepare data for clustering
 #-------------------
 
-dt_2018 <- dt %>% filter(year == 2018) %>% select(-year)
+dt_2018 <- dt %>% filter(year == 2018) %>% select(-year, -station)
 
 dist_matrix <- dt_2018 %>% as.matrix() %>% dist()
 
+
+#-------------------
+# Do clustering
+#-------------------
 
 # Dendrogram
 hc <- hclust(dist_matrix)
 plot(hc)
 
 
+# kmeans - Compute and plot wss for k = 1 to k = 12.
+get_tot_withinss <- function(nc){
+  tot_withinss <- kmeans(dist_matrix, nc) %>% .$tot.withinss
+  return(tibble(nc, tot_withinss))
+}
 
-# kmeans
-fit <- kmeans(dist_matrix, 4)
-plotcluster(dt, fit$cluster)
+set.seed(666)
+seq(1, 12) %>%
+  map_dfr(get_tot_withinss) %>%
+  ggplot(aes(x = nc, y = tot_withinss)) +
+  geom_point() +
+  geom_line() +
+  scale_x_continuous(breaks = seq(1, 12))
 
+num_clus <- 4
 
+fit <- kmeans(dist_matrix, num_clus)
+plotcluster(dt_2018, fit$cluster)
+
+list_stations <- function(ind){
+  tibble(cluster_id = fit$cluster) %>%
+    mutate(station = dt %>% filter(year == 2018) %>% .$station) %>%
+    filter(cluster_id == ind) %>%
+    head()
+}
+
+seq(1:num_clus) %>% map(list_stations)
