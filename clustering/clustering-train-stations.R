@@ -117,7 +117,7 @@ c(0, 1, 2) %>% map(~list_stations(model = ds1, ind = .))
 # umap
 #-------------------
 
-dt_umap <- umap(dt_2018)
+dt_umap <- umap::umap(dt_2018)
 
 set.seed(666)
 umap_layout <- dt_umap$layout %>% as_tibble(rownames = 'station')
