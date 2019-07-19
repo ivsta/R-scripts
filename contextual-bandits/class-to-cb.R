@@ -10,7 +10,7 @@ library(purrr)
 library(caret)
 library(data.table)
 
-dat_files <- list.files('~/vehicle-dataset', full.names = TRUE)
+dat_files <- list.files('~/vehicle-dataset', full.names = TRUE, pattern = 'dat$')
 
 
 
@@ -63,7 +63,6 @@ action <- sample(dat %>% .$Y %>% unique(), size = nrow(dat), replace = TRUE) %>%
 
 
 dat_transform <- dat %>%
-  select(-Y) %>%
   bind_cols(y_loss) %>%
   bind_cols(action)
 
@@ -88,7 +87,7 @@ dat_partial %>%
   mutate(p = n / sum(n))
 
 # a         n     p
-#<fct> <int> <dbl>
+# <fct> <int> <dbl>
 # 1 bus     211 0.249
 # 2 opel    216 0.255
 # 3 saab    214 0.253
@@ -108,3 +107,26 @@ dat_partial %>%
 
 
 dat_partial %>% fwrite('~/vehicle-dataset/dat_as_cb.csv')
+
+dat_transform %>%
+  select(-a) %>%
+  fwrite('~/vehicle-dataset/dat_as_cb_loss_only.csv')
+
+
+
+##################################
+# Simulate benchmark policies
+##################################
+
+# Perfect policy
+# A perfect policy would have a loss of zero.
+
+# Random policy
+dat_partial$loss %>% sum()
+# [1] 628
+
+# Constant policy - all buses
+dat_transform$loss_bus %>% sum()
+# [1] 628
+
+
