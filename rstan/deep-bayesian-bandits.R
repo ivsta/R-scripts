@@ -54,7 +54,7 @@ stanmodelcode = "
 data {                        // Data block
 	int<lower=1> n;            	// Sample size
 	int<lower=1> d;            	// Dimension of model matrix
-	matrix[n, d] context;       			// Model Matrix
+	matrix[n, d] context;       // Model Matrix
 	vector[n] y;               	// Target variable
 }
 
@@ -95,7 +95,32 @@ fit <- stan(model_code = stanmodelcode, data = dat, iter = 1200, warmup = 200,
 print(fit, digits_summary = 3, pars = c('beta', 'sigma'),
 	probs = c(.025, .5, .975))
 
-summary(modlm)
+
+######################
+# Compare results
+######################
+
+# True values
+coefs
+# [1]  5.0  0.2 -1.5
+
+
+# MLE fit
+modlm$coefficients %>% round(2)
+# (Intercept)          X1          X2
+#        4.76        0.17       -1.31
+
+
+# Bayesian fit
+betas <- rstan::extract(fit, pars = 'beta')$beta
+
+betas %>%
+	as_tibble() %>%
+	summarise_all(mean)
+# # A tibble: 1 x 3
+#      V1    V2    V3
+#   <dbl> <dbl> <dbl>
+# 1  4.77 0.190 -1.29
 
 
 ######################
@@ -110,7 +135,6 @@ rstan::traceplot(fit, pars = c('sigma'), inc_warmup = TRUE)
 
 
 # coda
-betas <- rstan::extract(fit, pars = 'beta')$beta
 betas.mcmc <- as.mcmc(betas)
 
 par(mar = c(1, 1, 1, 1))
