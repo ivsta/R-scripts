@@ -11,18 +11,18 @@ library(plotly)
 drive = c('texting','texting','texting','not','not', 'texting','texting','not','not','texting')
 
 # convert to numeric, arbitrarily picking texting=1, not=0
-driveNum = ifelse(drive=='texting', 1, 0)    
+driveNum = ifelse(drive == 'texting', 1, 0)
 N = length(drive)                            # sample size
-nTexting = sum(drive=='texting')             # number of drivers texting
-nNot = sum(drive=='not')                     # number of those not
+nTexting = sum(drive == 'texting')             # number of drivers texting
+nNot = sum(drive == 'not')                     # number of those not
 
-x1 = rbinom(1000, size=10, p=.5)
-x2 = rbinom(1000, size=10, p=.85)
+x1 = rbinom(1000, size = 10, prob = 0.5)
+x2 = rbinom(1000, size = 10, prob = 0.85)
 mean(x1); hist(x1)
 mean(x2); hist(x2)
 
 # Theta
-theta = seq(from=1/(N+1), to=N/(N+1), length=10)
+theta = seq(from = 1/(N + 1), to = N / (N + 1), length = 50)
 
 #-----------------------
 # Prior distribution
@@ -31,7 +31,7 @@ theta = seq(from=1/(N+1), to=N/(N+1), length=10)
 # pTheta = dunif(theta)
 
 # triangular as in Kruschke
-pTheta = pmin(theta, 1-theta) # beta prior with mean = .5
+pTheta = pmin(theta, 1 - theta) # beta prior with mean = .5
 
 # beta prior with mean = .5
 # pTheta = dbeta(theta, 10, 10)
@@ -67,7 +67,7 @@ round(results, 3)
 results_melt <- melt(results, id.vars = 'theta')
 
 p <- ggplot(data = results_melt, aes(x = theta, y = value, colour = variable)) +
-  geom_line() + geom_point() + 
+  geom_line() + geom_point() +
   theme_minimal() + theme(legend.title = element_blank())
 
 ggplotly(p)
@@ -83,7 +83,7 @@ posteriorMean
 
 
 
-# 
+#
 # require(ggplot2)
 # x <- seq(0, 1, len = 100)
 # p <- qplot(x, geom = "blank")
@@ -99,17 +99,21 @@ posteriorMean
 # Binomial Likelihood Example
 #--------------------
 
-x1 = rbinom(1000, size=10, p=.5) x2 = rbinom(1000, size=10, p=.85)
-binomLL = function(theta, x) { -sum(dbinom(x, size=10, p=theta, log=T))
+x1 = rbinom(1000, size = 10, prob = 0.5) x2 = rbinom(1000, size = 10, prob = 0.85)
+
+binomLL = function(theta, x){
+  -sum(dbinom(x, size = 10, prob = theta, log = T))
 }
-optimize(binomLL, x=x1, lower=0, upper=1); mean(x1)
+
+optimize(binomLL, x = x1, lower = 0, upper = 1); mean(x1)
 ## $minimum
 ## [1] 0.5043001
 ##
 ## $objective
 ## [1] 1902.557
 ## [1] 5.043
-optimize(binomLL, x=x2, lower=0, upper=1); mean(x2)
+
+optimize(binomLL, x = x2, lower = 0, upper = 1); mean(x2)
 ## $minimum
 ## [1] 0.8568963
 ##
