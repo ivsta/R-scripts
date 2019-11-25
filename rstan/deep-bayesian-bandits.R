@@ -7,9 +7,7 @@ library(coda)
 library(shinystan)
 library(tidyverse)
 set.seed(666)
-
-# options(mc.cores = parallel::detectCores())
-# options(mc.cores = 8)
+options(mc.cores = 8)
 
 
 ######################
@@ -58,10 +56,6 @@ data {                        // Data block
 	vector[n] y;               	// Target variable
 }
 
-/*
-transformed data { }			    // Transformed data block. Not used presently.
-*/
-
 parameters {					        // Parameters block
 	vector[d] beta;				      // Coefficient vector
 	real<lower=0> sigma;		    // Error scale
@@ -73,15 +67,11 @@ model {							          // Model block
 
 	// priors
 	beta ~ normal(0, 10);
-	sigma ~ cauchy(0, 5);		    // With sigma bounded at 0, this is half-cauchy
+	sigma ~ inv_gamma(2, 2);
 
 	// likelihood
 	y ~ normal(mu, sigma);
 }
-
-/*
-generated quantities { }		  // Generated quantities block. Not used presently.
-*/
 "
 
 
@@ -108,7 +98,7 @@ coefs
 # MLE fit
 modlm$coefficients %>% round(2)
 # (Intercept)          X1          X2
-#        4.76        0.17       -1.31
+#        4.82        0.15       -1.44
 
 
 # Bayesian fit
@@ -117,10 +107,9 @@ betas <- rstan::extract(fit, pars = 'beta')$beta
 betas %>%
 	as_tibble() %>%
 	summarise_all(mean)
-# # A tibble: 1 x 3
 #      V1    V2    V3
 #   <dbl> <dbl> <dbl>
-# 1  4.77 0.190 -1.29
+# 1  4.83 0.151 -1.45
 
 
 ######################
