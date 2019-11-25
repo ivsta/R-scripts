@@ -12,14 +12,14 @@ set.seed(8675309)
 # create a N x k matrix of covariates
 N = 250
 K = 3
-covariates = replicate(K, rnorm(n=N))
+covariates = replicate(K, rnorm(n = N))
 colnames(covariates) = c('X1', 'X2', 'X3')
 
 # create the model matrix with intercept
-X = cbind(Intercept=1, covariates)
+X = cbind(Intercept = 1, covariates)
 
 # create a normally distributed variable that is a function of the covariates
-coefs = c(5,.2,-1.5,.9)
+coefs = c(5, 0.2, -1.5, 0.9)
 mu = X %*% coefs
 sigma = 2
 y <- rnorm(N, mu, sigma)
@@ -28,7 +28,7 @@ y <- rnorm(N, mu, sigma)
 # y = 5 + .2*X1 - 1.5*X2 + .9*X3 + rnorm(N, mean=0, sd=2)
 
 # Run lm for later comparison; but go ahead and examine now if desired
-modlm = lm(y~., data=data.frame(X[,-1])) # summary(modlm)
+modlm = lm(y ~ ., data = data.frame(X[, -1]))
 summary(modlm)
 
 
@@ -37,10 +37,7 @@ summary(modlm)
 
 
 # Create the data list object for stan inupt
-dat = list(N = N
-           , K = ncol(X)
-           , y = y
-           , X = X)
+dat = list(N = N, K = ncol(X), y = y, X = X)
 
 str(dat)
 
@@ -81,12 +78,8 @@ generated quantities { }		  // Generated quantities block. Not used presently.
 
 
 ### Run the model and examine results ###
-fit = stan(model_code = stanmodelcode
-           , data = dat
-           , iter = 12000
-           , warmup = 2000
-           , thin = 10
-           , chains = 3)
+fit = stan(model_code = stanmodelcode, data = dat, iter = 12000, warmup = 2000,
+	thin = 10, chains = 3)
 
 # summary
 print(fit
@@ -98,32 +91,34 @@ print(fit
 summary(modlm)
 # Call:
 #   lm(formula = y ~ ., data = data.frame(X[, -1]))
-# 
+#
 # Residuals:
-#   Min      1Q  Median      3Q     Max 
-# -6.8632 -1.4696  0.2431  1.4213  5.0406 
-# 
+#   Min      1Q  Median      3Q     Max
+# -6.8632 -1.4696  0.2431  1.4213  5.0406
+#
 # Coefficients:
-#   Estimate Std. Error t value Pr(>|t|)    
+#   Estimate Std. Error t value Pr(>|t|)
 # (Intercept)  4.89777    0.12845  38.131  < 2e-16 ***
-#   X1           0.08408    0.12960   0.649    0.517    
+#   X1           0.08408    0.12960   0.649    0.517
 # X2          -1.46861    0.12615 -11.642  < 2e-16 ***
 #   X3           0.81959    0.12065   6.793 8.21e-11 ***
 #   ---
 #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-# 
+#
 # Residual standard error: 2.021 on 246 degrees of freedom
-# Multiple R-squared:  0.4524,	Adjusted R-squared:  0.4458 
+# Multiple R-squared:  0.4524,	Adjusted R-squared:  0.4458
 # F-statistic: 67.75 on 3 and 246 DF,  p-value: < 2.2e-16
 
 
 # Visualize
-traceplot(fit, pars=c('beta[4]'), inc_warmup = TRUE)
+rstan::traceplot(fit, pars = c('beta[4]'), inc_warmup = TRUE)
 
 
 
 betas = extract(fit, pars='beta')$beta
 betas.mcmc = as.mcmc(betas)
+
+par(mar=c(1,1,1,1))
 plot(betas.mcmc)
 
 

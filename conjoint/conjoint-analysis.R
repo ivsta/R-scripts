@@ -1,3 +1,4 @@
+# http://keii.ue.wroc.pl/pracownicy/tb/Bak_A_and_Bartlomowicz_T_Conjoint_analysis_method_and_its_implementation_in_conjoint_R_package.pdf
 # https://www.data-mania.com/blog/conjoint-analysis-in-r/
 
 library(conjoint)
