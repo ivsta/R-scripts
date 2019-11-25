@@ -123,6 +123,9 @@ plot(betas.mcmc)
 
 
 
+library(shinystan)
+my_sso <- launch_shinystan(fit)
+
 
 
 
