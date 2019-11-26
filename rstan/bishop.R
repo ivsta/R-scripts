@@ -3,6 +3,7 @@
 # Figure 3.7
 ################################################################
 
+install.packages("mvtnorm")
 library(rstan)
 library(coda)
 library(shinystan)
@@ -22,8 +23,6 @@ a_1 <- 0.5
 truth <- tibble(a_0 = a_0, a_1 = a_1)
 sigma <- 0.2
 
-
-
 alpha <- 2
 beta <- (1/sigma)^2
 
@@ -37,12 +36,12 @@ df %>%
 
 
 # Run lm for later comparison
-modlm <- lm(t ~ x, data = df)
+modlm <- lm(y ~ x, data = df)
 summary(modlm)
 
 
 
-w_len <- 200
+w_len <- 100
 w_0 <- seq(-1, 1, length.out = w_len)
 w_1 <- seq(-1, 1, length.out = w_len)
 w_array <- expand.grid('w_0' = w_0, 'w_1' = w_1)
@@ -60,7 +59,7 @@ get_gaussian <- function(w_0, w_1){
 w_df_0 <- map2_dfr(.x = w_array$w_0, .y = w_array$w_1, .f = get_gaussian)
 
 w_df_0 %>%
-  ggplot(aes(x = w_0, y = w_1, fill = t)) +
+  ggplot(aes(x = w_0, y = w_1, fill = log(t))) +
   geom_raster() +
   coord_equal() +
   scale_fill_gradientn(colours = rainbow(4)) +
@@ -105,29 +104,22 @@ tibble(x = seq(-1, 1, length.out = 10), y = seq(-1, 1, length.out = 10)) %>%
 # Likelihood function p(t|x, w) for this data point
 #####################################################################
 
-w_matrix_1 <- matrix(0, length(w_0), length(w_1))
-
-for (i in 1:length(w_0)){
-  a <- w_0
-  b <- w_1[i]
-  w_matrix_1[, i] <- dmvnorm(x = cbind(a, b), mean = c(b*df[1,]$x, 0), sigma = diag(2) / beta)
+get_likelihood <- function(w_0, w_1){
+  tibble(w_0 = w_0, w_1 = w_1,
+         t = dmvnorm(cbind(w_0, w_1),
+                     mean = rep(w_0 + w_1 * df[1,]$x, 2), sigma = diag(2) * 1/beta))
 }
 
-w_df_1 <- w_matrix_1 %>%
-  melt() %>%
-  as_tibble() %>%
-  mutate('w0' = (Var1 - 100) / 100, 'w1' = (Var2 - 100) / 100) %>%
-  select(w0, w1, value)
+(w_df_1 <- map2_dfr(.x = w_array$w_0, .y = w_array$w_1, .f = get_likelihood))
 
-ggplot() +
-  geom_raster(data = w_df_1, aes(x = w0, y = w1, fill = value)) +
+w_df_1 %>%
+  ggplot() +
+  geom_raster(aes(x = w_0, y = w_1, fill = log(t))) +
   coord_equal() +
   scale_fill_gradientn(colours = rainbow(4)) +
   scale_x_continuous(name = 'w0', expand = c(0, 0)) +
   scale_y_continuous(name = 'w1', expand = c(0, 0)) +
   theme_bw() +
   theme(legend.position = 'None') +
-  geom_point(data = truth, aes(x = a_0, y = a_1), shape = 3, size = 4)
-
-
+  geom_point(data = truth, aes(x = a_0, y = a_1), shape = 3, size = 3, colour = 'white')
 
